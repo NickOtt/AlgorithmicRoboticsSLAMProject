@@ -1,5 +1,5 @@
 % Remove all plots
-clear all;
+clear;
 close all;
 
 % % Create a fake scan that is a straight line
