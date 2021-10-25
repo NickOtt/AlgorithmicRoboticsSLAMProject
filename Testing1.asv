@@ -22,7 +22,7 @@ pose(:,1) = initPose;
 
 % Load map
 close all
-load complexMap
+load exampleMap
 
 % Create lidar sensor
 lidar = LidarSensor;
