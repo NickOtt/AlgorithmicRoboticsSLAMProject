@@ -1,4 +1,4 @@
-function [mu_new, P_new] = ekf_landmark_init(mu, P, z, sigma_r, sigma_phi)
+function [mu_new, P_new] = ekf_add_landmark(mu, P, z, sigma_r, sigma_phi)
     x = mu(1);
     y = mu(2);
     theta = mu(3);
