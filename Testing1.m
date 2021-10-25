@@ -5,6 +5,11 @@
 % 
 % Copyright 2019 The MathWorks, Inc.
 
+% Set up path
+addpath(genpath('examples'))
+addpath(genpath('src'))
+addpath(genpath('doc'))
+
 %% Simulation setup
 % Define Vehicle
 R = 0.1;                        % Wheel radius [m]
