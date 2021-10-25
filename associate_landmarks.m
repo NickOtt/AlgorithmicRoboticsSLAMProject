@@ -1,45 +1,5 @@
 % Determines if landmarks are new landmarks or old landmarks being refound
 
-% Remove all plots
-clear;
-close all;
-
-% Create some random lines
-lines = 3 * rand(3, 3) - 1.5;
-
-% Robot position
-pos = [0; 0];
-
-% Find closest points as landmarks
-closest = zeros(2, size(lines, 2));
-for i = 1:size(lines, 2)
-   closest(:, i) = closest_point_on_line(lines(:, i), pos);
-end
-
-hold on
-scatter(pos(1), pos(2)); % Robot position
-xlim([-4, 4]);
-ylim([-4, 4]);
-
-% Plot lines and closest points
-for i = 1:size(lines, 2)
-    line = lines(:, i);
-    x = -4:0.5:4;
-    y = (line(1) * x + line(3))/-line(2);
-    plot(x, y);
-    scatter(closest(1, i), closest(2, i));
-end
-
-function p = closest_point_on_line(line, point)
-    % Finds the closest point on a line to the start point
-    % From https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
-    a = line(1); b = line(2); c = line(3);
-    x0 = point(1); y0 = point(2);
-    x = (b*(b*x0 - a*y0) - a*c) / (a^2 + b^2);
-    y = (a*(-b*x0 + a*y0) - b*c) / (a^2 + b^2);
-    p = [x; y];
-end
-
 function [new_landmarks, new_counts] = associate_landmarks(landmarks, counts, covs, detections, lambda)
     % Given a current selection of landmarks and how many times each has
     % been detected, along with position covariances for each,
