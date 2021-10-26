@@ -1,3 +1,13 @@
+% Environment setup
+addpath(genpath('src'))
+
+% Create lidar sensor
+lidar = LidarSensor;
+lidar.sensorOffset = [0,0];
+lidar.scanAngles = linspace(-pi/2,pi/2,51);
+lidar.maxRange = 5;
+
+% General parameters
 mu = [0; 0; 0];
 P = [0.1, 0, 0;
     0, 0.1, 0;
@@ -20,7 +30,9 @@ for i=1:length(commands)
     [mu_bar, P_bar] = ekf_prediction(mu, P, commands(:, i), alpha);
 
     % Simulate motion
+    curPose = sample_motion_model_velocity(command(i),mu_bar,alpha);
     % Simulate laser scan
+    ranges = lidar(curPose); % might need  to add map and do more setup
 
     scan = []; % Array of distances
     coords = scan_to_xy(scan, mu_bar);
