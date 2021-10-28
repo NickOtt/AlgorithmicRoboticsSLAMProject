@@ -1,4 +1,21 @@
-mu = [0; 0; 0];
+addpath(genpath('src'))
+addpath(genpath('examples'))
+
+load exampleMap
+
+% Create lidar sensor
+lidar = LidarSensor;
+lidar.sensorOffset = [0,0];
+lidar.scanAngles = linspace(-pi/2,pi/2,51);
+lidar.maxRange = 5;
+
+% Create visualizer
+viz = Visualizer2D;
+viz.hasWaypoints = false;
+viz.mapName = 'map';
+attachLidarSensor(viz,lidar);
+
+mu = [2; 2; 0];
 P = [0.1, 0, 0;
     0, 0.1, 0;
     0, 0, 0.02];
@@ -25,8 +42,10 @@ for i=1:length(commands)
     [mu_bar, P_bar] = ekf_prediction(mu, P, commands(:, i), alpha);
 
     % Simulate motion
+    curPose = sample_motion_model_velocity(commands(:,i),mu,alpha);
     % Simulate laser scan
-    scan = [1,1.1,1.2,1.3,1.4; 0,0.1,0.2,0.3,0.4]; % Array of [distance; angle]
+    scan = lidar(curPose);
+    %scan = [1,1.1,1.2,1.3,1.4; 0,0.1,0.2,0.3,0.4]; % Array of [distance; angle]
     
     % Convert scan to global xy coordinates
     coords = scan_to_xy(scan, mu_bar);
