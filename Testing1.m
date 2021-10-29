@@ -27,7 +27,15 @@ pose(:,1) = initPose;
 
 % Load map
 close all
-load complexMap
+%load complexMap
+p = zeros(20,20);
+p(1,2) = 1;
+p(1,7) = 1;
+p(1,13) = 1;
+p(12,2) = 1;
+p(12,7) = 1;
+p(12,13) = 1;
+map = occupancyMap(p,2);
 
 % Create lidar sensor
 lidar = LidarSensor;
