@@ -1,17 +1,10 @@
-% Close everything for testing
-close all;
-clear;
-
-mu = [1;2;3; 0; 1; 2; 1];
-P = 0.1 * diag(rand(size(mu)));
-coords = 10 * rand(2, 20) - 5;
-
-plot_world(mu, P, coords);
-
-
 % Plots the robot pose, landmarks, covariance ellipses, and the laser scan
-function plot_world(mu, P, coords)
+% As well as the map and landmark positions
+function plot_world(mu, P, coords, map, lines)
     hold on;
+    
+    % Plot map in world coords
+    show(map)
     
     % Plot robot position
     scatter(mu(1), mu(2), 'blue');
@@ -30,7 +23,15 @@ function plot_world(mu, P, coords)
     % Plot scan coordinates
     scatter(coords(1, :), coords(2, :), 100, '.');  % 100 makes the dots large
     
+    % Plot lines
+    for i = 1:size(lines, 2)
+        line = lines(:, i);
+        x = 0:5:10;
+        y = (line(1) * x + line(3))/-line(2);
+        plot(x, y);
+    end
+    
     % Limits of the graph
-    xlim([-5, 5])
-    ylim([-5; 5])
+    xlim([0, 10])
+    ylim([0; 10])
 end

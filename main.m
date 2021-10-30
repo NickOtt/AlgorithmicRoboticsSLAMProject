@@ -1,3 +1,6 @@
+clear;
+close all;
+
 addpath(genpath('src'))
 
 % Create map
@@ -26,7 +29,7 @@ viz.hasWaypoints = false;
 viz.mapName = 'map';
 attachLidarSensor(viz,lidar);
 
-mu = [2; 2; 0];
+mu = [1; 2; 0];
 P = [0.1, 0, 0;
     0, 0.1, 0;
     0, 0, 0.02];
@@ -48,21 +51,29 @@ lambda = 2; % std dev at which a landmark is close enough to be matched
 % How many times each landmark was found
 landmark_counts = [];
 
-for i=1:length(commands)
+for i=1:1%length(commands)
     % Step 1: Predict current state forward
     [mu_bar, P_bar] = ekf_prediction(mu, P, commands(:, i), alpha);
 
-    % Simulate motion
+    % Simulate motion (This is where the robot "actually" is)
     curPose = sample_motion_model_velocity(commands(:,i),mu,alpha);
+    
     % Simulate laser scan
     scan = lidar(curPose);
-    %scan = [1,1.1,1.2,1.3,1.4; 0,0.1,0.2,0.3,0.4]; % Array of [distance; angle]
     
-    % Convert scan to global xy coordinates
-    coords = scan_to_xy(scan, mu_bar);
+    % Only pass non-nan values (max distance) to future functions
+    hits = ~isnan(scan);
     
+    % Convert scan to global xy coordinates based on where robot "thinks"
+    % it is
+    coords = scan_to_xy(scan(hits), lidar.scanAngles(hits), mu_bar);
+        
     % Extract lines using ransac
     lines = multi_line_ransac(coords, N, dist, L, n_thresh);
+    coords
+    lines
+
+    plot_world(curPose, P_bar, coords, map, lines);
 
     % Find the closest points on each line to a given global position
     % This is the landmark point

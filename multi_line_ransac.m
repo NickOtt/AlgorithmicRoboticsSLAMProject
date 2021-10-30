@@ -65,8 +65,8 @@ end
 function line = fit_line(p1, p2)
    % Given two points, returns coefficient of line as ax + by + c = 0
    a = p1(2) - p2(2);
-   b = p1(1) - p2(1);
-   c = -(a*p1(1) + b*p1(2));
+   b = p2(1) - p1(1);
+   c = (p1(1)*p2(2) - p2(1)*p1(2));
    
    line = [a; b; c];
 end
