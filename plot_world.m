@@ -10,7 +10,7 @@ function plot_world(curPose, mu, P, coords, map, lines)
     show(map)
     
     % Plot actual position
-    scatter(curPose(1), curPose(2), 50, 'green', 'filled');
+    scatter(curPose(1), curPose(2), 150, 'green', 'filled');
     
     % Plot robot position
     scatter(mu(1), mu(2), 50, 'blue', 'filled');
