@@ -3,6 +3,8 @@ close all;
 
 addpath(genpath('src'))
 
+rng(499);
+
 % Create map
 p = zeros(20,20);
 p(5,2) = 1;
@@ -35,7 +37,8 @@ P = [0.01, 0, 0;
     0, 0, 0.02];
 
 alpha = [0.0001;  0.0001;  0.001;  0.0001;  0.0001;  0.0001];
-commands = [[1;0], [1;0], [1;0], [pi/2;pi/2], [pi/2;pi/2], [1;0], [1;0], [1;0]];
+%commands = [[1;0], [1;0], [1;0], [pi/2;pi/2], [pi/2;pi/2], [1;0], [1;0], [1;0]];
+commands = [[0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0]];
 sigma_r = 0.01;
 sigma_phi = 0.01;
 
@@ -46,12 +49,12 @@ L = 5; % Max number of lines to extract
 n_thresh = 5; % How many points need to be in a line
 
 % Data Association params
-lambda = 2.44; % std dev at which a landmark the same (%chi squared 95% confidence)
+lambda = 5; % std dev at which a landmark the same (%chi squared 95% confidence)
 
 % How many times each landmark was found
 landmark_counts = [];
 
-for i=1:7 %length(commands)
+for i=1:length(commands)
     % Step 1: Predict current state forward
     [mu_bar, P_bar] = ekf_prediction(mu, P, commands(:, i), alpha);
 
@@ -77,7 +80,7 @@ for i=1:7 %length(commands)
     
     % Should the pos be based on where the robot was when the landmark was
     % first found?
-    pos = [1; 1];
+    pos = [5; 5];
     measured_landmarks = zeros(2, size(lines, 2));
     for j = 1:size(lines, 2)
         measured_landmarks(:, j) = closest_point_on_line(lines(:, j), pos);
@@ -89,7 +92,7 @@ for i=1:7 %length(commands)
     % Landmakrs covs are extracted from matrix P. Potentially, they should
     % be a combination of the robot cov and the landmark cov. 
     landmarks = reshape(mu_bar(4:end), 2, []);
-    landmark_covs = P;
+    landmark_covs = P_bar;
 
     [matched_indices, landmark_counts] = associate_landmarks(landmarks, measured_landmarks, landmark_covs, landmark_counts, lambda);
     

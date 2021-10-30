@@ -53,7 +53,7 @@ function index = closest_landmark(landmarks, l)
     min_dist = 1000;
     min_i = 0;
     for i = 1:size(landmarks, 2)
-       dist = (landmarks(1) - l(1))^2 + (landmarks(2) - l(2))^2;
+       dist = (landmarks(1,i) - l(1))^2 + (landmarks(2,i) - l(2))^2;
        if dist < min_dist
           min_dist = dist;
           min_i = i;
