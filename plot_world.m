@@ -1,8 +1,12 @@
 % Plots the robot pose, landmarks, covariance ellipses, and the laser scan
 % As well as the map and landmark positions
+
+
 function plot_world(mu, P, coords, map, lines)
     hold on;
     
+    cmap = hsv(15); % 15 color choices
+
     % Plot map in world coords
     show(map)
     
@@ -10,14 +14,15 @@ function plot_world(mu, P, coords, map, lines)
     scatter(mu(1), mu(2), 50, 'blue', 'filled');
     
     % Extract and plot landmarks
-    scatter(mu(4:2:end-1), mu(5:2:end), 50, 'red', 'filled');
+    cmap(max((length(mu)-3)/2,1), :)
+    scatter(mu(4:2:end-1), mu(5:2:end), 50, cmap(1:(length(mu)-3)/2, :), 'filled');
     
     % Plot robot cov
     plot_cov_ellipse(mu(1:2), P(1:2, 1:2), 'blue');
     
     % Plot landmark covs
     for i = 4:2:size(mu, 1)
-        plot_cov_ellipse(mu(i:i+1), P(i:i+1, i:i+1), 'red');
+        plot_cov_ellipse(mu(i:i+1), P(i:i+1, i:i+1), cmap((i-4)/2+1, :));
     end
     
     % Plot scan coordinates
