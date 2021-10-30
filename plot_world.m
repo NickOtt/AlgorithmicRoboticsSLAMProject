@@ -2,19 +2,21 @@
 % As well as the map and landmark positions
 
 
-function plot_world(mu, P, coords, map, lines)
+function plot_world(curPose, mu, P, coords, map, lines)
     hold on;
-    
     cmap = hsv(15); % 15 color choices
 
     % Plot map in world coords
     show(map)
     
+    % Plot actual position
+    scatter(curPose(1), curPose(2), 50, 'green', 'filled');
+    
     % Plot robot position
     scatter(mu(1), mu(2), 50, 'blue', 'filled');
     
     % Extract and plot landmarks
-    cmap(max((length(mu)-3)/2,1), :)
+    cmap(max((length(mu)-3)/2,1), :);
     scatter(mu(4:2:end-1), mu(5:2:end), 50, cmap(1:(length(mu)-3)/2, :), 'filled');
     
     % Plot robot cov

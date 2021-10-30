@@ -30,7 +30,8 @@ function [mu, P] = ekf_correction(mu_bar, P_bar, z, landmark_idx, sigma_r, sigma
     z_diff(2) = clamp(z_diff(2));
     
     mu = mu_bar + (K * z_diff);
-    P = (eye(length(P_bar)) - (K * H)) * P_bar;
+    %P = (eye(length(P_bar)) - (K * H)) * P_bar;
+    P = P_bar - (K * S * transpose(K));
 end
 
 function y = clamp(x)

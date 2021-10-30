@@ -7,12 +7,11 @@ rng(499);
 
 % Create map
 p = zeros(20,20);
-p(5,2) = 1;
-p(5,7) = 1;
-p(5,13) = 1;
-p(16,2) = 1;
-p(16,7) = 1;
-p(16,13) = 1;
+%p(5,2) = 1;
+p(5:6,6:7) = 1;
+p(15:16,7:8) = 1;
+p(10:11,5:6) = 1;
+%p(16,13) = 1;
 p(:,1) = 1;
 p(:,20) = 1;
 p(1,:) = 1;
@@ -37,8 +36,10 @@ P = [0.01, 0, 0;
     0, 0, 0.02];
 
 alpha = [0.0001;  0.0001;  0.001;  0.0001;  0.0001;  0.0001];
+%alpha = [0.0000000001;  0.0000000001;  0.000000001;  0.0000000001;  0.0000000001;  0.0000000001];
 %commands = [[1;0], [1;0], [1;0], [pi/2;pi/2], [pi/2;pi/2], [1;0], [1;0], [1;0]];
-commands = [[0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0]];
+%commands = [[0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0]];
+commands = [[0.2;0], [0.2;0], [0.2;0], [0.2; pi/6], [0.2; pi/6], [0.2; pi/6], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0]];
 sigma_r = 0.01;
 sigma_phi = 0.01;
 
@@ -72,7 +73,7 @@ for i=1:length(commands)
     lines = multi_line_ransac(coords, N, dist, L, n_thresh);
     
     % Plot visualization
-    plot_world(mu_bar, P_bar, coords, map, lines);
+    plot_world(curPose, mu_bar, P_bar, coords, map, lines);
     pause;
 
     % Find the closest points on each line to a given global position
@@ -80,7 +81,7 @@ for i=1:length(commands)
     
     % Should the pos be based on where the robot was when the landmark was
     % first found?
-    pos = [5; 5];
+    pos = [5; 5; 0];
     measured_landmarks = zeros(2, size(lines, 2));
     for j = 1:size(lines, 2)
         measured_landmarks(:, j) = closest_point_on_line(lines(:, j), pos);
@@ -112,7 +113,7 @@ for i=1:length(commands)
         end
     end
     
-    plot_world(mu_bar, P_bar, coords, map, lines);
+    plot_world(curPose, mu_bar, P_bar, coords, map, lines);
     pause;
     
     mu = mu_bar;
