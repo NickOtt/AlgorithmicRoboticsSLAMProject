@@ -7,10 +7,10 @@ function plot_world(mu, P, coords, map, lines)
     show(map)
     
     % Plot robot position
-    scatter(mu(1), mu(2), 'blue');
+    scatter(mu(1), mu(2), 50, 'blue', 'filled');
     
     % Extract and plot landmarks
-    scatter(mu(4:2:end-1), mu(5:2:end), 'red');
+    scatter(mu(4:2:end-1), mu(5:2:end), 50, 'red', 'filled');
     
     % Plot robot cov
     plot_cov_ellipse(mu(1:2), P(1:2, 1:2), 'blue');

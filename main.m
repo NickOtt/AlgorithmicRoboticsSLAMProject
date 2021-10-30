@@ -29,55 +29,55 @@ viz.hasWaypoints = false;
 viz.mapName = 'map';
 attachLidarSensor(viz,lidar);
 
-mu = [1; 2; 0];
-P = [0.1, 0, 0;
-    0, 0.1, 0;
+mu = [1; 1.5; 0];
+P = [0.01, 0, 0;
+    0, 0.01, 0;
     0, 0, 0.02];
 
-alpha = [0.0001;  0.0001;  0.01;  0.0001;  0.0001;  0.0001];
+alpha = [0.0001;  0.0001;  0.001;  0.0001;  0.0001;  0.0001];
 commands = [[1;0], [1;0], [1;0], [pi/2;pi/2], [pi/2;pi/2], [1;0], [1;0], [1;0]];
 sigma_r = 0.01;
 sigma_phi = 0.01;
 
 % Ransac Params
 N = 100; % Number of times to try to find a line
-dist = 0.1; % Dist at which point is matched to a line
+dist = 0.01; % Dist at which point is matched to a line
 L = 5; % Max number of lines to extract
-n_thresh = 10; % How many points need to be in a line
+n_thresh = 5; % How many points need to be in a line
 
 % Data Association params
-lambda = 2; % std dev at which a landmark is close enough to be matched
+lambda = 2.44; % std dev at which a landmark the same (%chi squared 95% confidence)
 
 % How many times each landmark was found
 landmark_counts = [];
 
-for i=1:1%length(commands)
+for i=1:7 %length(commands)
     % Step 1: Predict current state forward
     [mu_bar, P_bar] = ekf_prediction(mu, P, commands(:, i), alpha);
 
     % Simulate motion (This is where the robot "actually" is)
-    curPose = sample_motion_model_velocity(commands(:,i),mu,alpha);
-    
     % Simulate laser scan
-    scan = lidar(curPose);
-    
     % Only pass non-nan values (max distance) to future functions
+    curPose = sample_motion_model_velocity(commands(:,i),mu,alpha);
+    scan = lidar(curPose);
     hits = ~isnan(scan);
     
-    % Convert scan to global xy coordinates based on where robot "thinks"
-    % it is
+    % Convert scan to xy coordinates based on where robot "thinks" it is
     coords = scan_to_xy(scan(hits), lidar.scanAngles(hits), mu_bar);
         
     % Extract lines using ransac
     lines = multi_line_ransac(coords, N, dist, L, n_thresh);
-    coords
-    lines
-
-    plot_world(curPose, P_bar, coords, map, lines);
+    
+    % Plot visualization
+    plot_world(mu_bar, P_bar, coords, map, lines);
+    pause;
 
     % Find the closest points on each line to a given global position
     % This is the landmark point
-    pos = [0; 0];
+    
+    % Should the pos be based on where the robot was when the landmark was
+    % first found?
+    pos = [1; 1];
     measured_landmarks = zeros(2, size(lines, 2));
     for j = 1:size(lines, 2)
         measured_landmarks(:, j) = closest_point_on_line(lines(:, j), pos);
@@ -90,6 +90,7 @@ for i=1:1%length(commands)
     % be a combination of the robot cov and the landmark cov. 
     landmarks = reshape(mu_bar(4:end), 2, []);
     landmark_covs = P;
+
     [matched_indices, landmark_counts] = associate_landmarks(landmarks, measured_landmarks, landmark_covs, landmark_counts, lambda);
     
     % Run update using detected landmarks to update robot and landmarks
@@ -108,8 +109,9 @@ for i=1:1%length(commands)
         end
     end
     
+    plot_world(mu_bar, P_bar, coords, map, lines);
+    pause;
+    
     mu = mu_bar;
     P = P_bar;
 end
-
-

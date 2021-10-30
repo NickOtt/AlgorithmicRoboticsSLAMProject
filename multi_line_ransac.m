@@ -19,6 +19,11 @@ function lines = multi_line_ransac(points, N, dist, L, n_thresh)
             
             % Remove inliers and go again
             points = points(:, ~logical(inliers));
+            
+            % If we have used all points, return
+            if size(points, 2) == 0
+               break; 
+            end
         end
     end
 end
@@ -39,6 +44,7 @@ function [line, n, inliers] = run_ransac(points, N, dist)
         % TODO: What if these are the same
         % TODO: Pick indices close to each other because points are ordered
         % in a laserscan
+        
         index1 = randi(size(points, 2));
         index2 = randi(size(points, 2));
         p1 = points(:, index1);

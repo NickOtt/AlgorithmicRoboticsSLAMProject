@@ -15,14 +15,21 @@ function [matched_indices, new_counts] = associate_landmarks(landmarks, detectio
         % Find which it is closest to
         closest = closest_landmark(landmarks, l);
         
+        % This occurs when there are currently no landmarks
+        if closest == 0
+            % All landmarks are new if there are no landmarks
+            new_counts = [new_counts, 1];
+            continue;
+        end
+        
         % Extract the covariance matrix for this landmark
         % covs are 2x2 on the diagonal, first 3x3 is for robot cov
-        cov_i = 3+2*(closest-1);
+        cov_i = 4+2*(closest-1);
         closest_cov = covs(cov_i:cov_i+1, cov_i:cov_i+1);
-        if is_in_range(landmarks(:, closest), l, closest_cov, lamdba)
+        if is_in_range(landmarks(:, closest), l, closest_cov, lambda)
             % If close to an existing landmark increment count by one
             % And add the matched index to array
-            counts(closest) = counts(closest) + 1;
+            new_counts(closest) = counts(closest) + 1;
             matched_indices(i) = closest;
         else
             % Otherwise, it is new so add its count BUT leave the 
