@@ -23,7 +23,7 @@ lidar = LidarSensor;
 lidar.sensorOffset = [0,0];
 lidar.scanAngles = linspace(-pi/2,pi/2,51);
 lidar.maxRange = 5;
-lidar_noise_sigma = 1;
+lidar_noise_sigma = 0.1;
 
 % Create visualizer
 viz = Visualizer2D;
@@ -65,11 +65,11 @@ for i=1:length(commands)
     % Only pass non-nan values (max distance) to future functions
     curPose = sample_motion_model_velocity(commands(:,i),mu,alpha);
     scan = lidar(curPose);
-    noisy_scan = make_scan_noisy(scan,lidar_noise_sigma);
+    noisy_scan = make_scan_noisy(scan,lidar_noise_sigma)';
     hits = ~isnan(noisy_scan);
     
     % Convert scan to xy coordinates based on where robot "thinks" it is
-    coords = scan_to_xy(scan(hits), lidar.scanAngles(hits), mu_bar);
+    coords = scan_to_xy(noisy_scan(hits), lidar.scanAngles(hits), mu_bar);
         
     % Extract lines using ransac
     lines = multi_line_ransac(coords, N, dist, L, n_thresh);
