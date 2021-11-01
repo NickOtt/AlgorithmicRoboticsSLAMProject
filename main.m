@@ -21,9 +21,9 @@ map = occupancyMap(p,2);
 % Create lidar sensor
 lidar = LidarSensor;
 lidar.sensorOffset = [0,0];
-lidar.scanAngles = linspace(-pi/2,pi/2,51);
+lidar.scanAngles = linspace(-pi/2,pi/2,101);
 lidar.maxRange = 5;
-lidar_noise_sigma = 0.1;
+lidar_noise_sigma = 0.0;
 
 % Create visualizer
 viz = Visualizer2D;
@@ -37,10 +37,10 @@ P = [0.01, 0, 0;
     0, 0, 0.02];
 
 alpha = [0.0001;  0.0001;  0.01;  0.0001;  0.0001;  0.0001];
-%alpha = [0.0000000001;  0.0000000001;  0.000000001;  0.0000000001;  0.0000000001;  0.0000000001];
-%commands = [[1;0], [1;0], [1;0], [pi/2;pi/2], [pi/2;pi/2], [1;0], [1;0], [1;0]];
-%commands = [[0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0]];
-commands = [[0.2;0], [0.2;0], [0.2;0], [0.2; pi/6], [0.2; pi/6], [0.2; pi/6], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0]];
+alpha = zeros(1, 6);
+
+commands = [[1;0], [1;0], [1;0], [pi/2;pi/2], [pi/2;pi/2], [1;0], [1;0], [1;0]];
+% commands = [[0.2;0], [0.2;0], [0.2;0], [0.2; pi/6], [0.2; pi/6], [0.2; pi/6], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0]];
 sigma_r = 0.01;
 sigma_phi = 0.01;
 
@@ -51,10 +51,15 @@ L = 5; % Max number of lines to extract
 n_thresh = 5; % How many points need to be in a line
 
 % Data Association params
-lambda = 5; % std dev at which a landmark the same (%chi squared 95% confidence)
+lambda = 6; % std dev at which a landmark the same (%chi squared 95% confidence)
 
 % How many times each landmark was found
 landmark_counts = [];
+
+% To store history
+real_poses = [mu];
+filtered_poses = [mu];
+commanded_poses = [mu];
 
 for i=1:length(commands)
     % Step 1: Predict current state forward
@@ -63,8 +68,15 @@ for i=1:length(commands)
     % Simulate motion (This is where the robot "actually" is)
     % Simulate laser scan
     % Only pass non-nan values (max distance) to future functions
-    curPose = sample_motion_model_velocity(commands(:,i),mu,alpha);
-    scan = lidar(curPose);
+    real_pos = sample_motion_model_velocity(commands(:,i),mu,alpha);
+    
+    % Update real poses history
+    real_poses = [real_poses, real_pos];
+    
+    % Update ideal commanded poses history
+    commanded_poses = [commanded_poses, sample_motion_model_velocity(commands(:,i),commanded_poses(:, end),zeros(1, 6))];
+    
+    scan = lidar(real_pos);
     noisy_scan = make_scan_noisy(scan,lidar_noise_sigma)';
     hits = ~isnan(noisy_scan);
     
@@ -75,7 +87,7 @@ for i=1:length(commands)
     lines = multi_line_ransac(coords, N, dist, L, n_thresh);
     
     % Plot visualization
-    plot_world(curPose, mu_bar, P_bar, coords, map, lines);
+    plot_world(mu_bar, P_bar, coords, map, lines, real_poses, filtered_poses, []);
     pause;
 
     % Find the closest points on each line to a given global position
@@ -88,6 +100,9 @@ for i=1:length(commands)
     for j = 1:size(lines, 2)
         measured_landmarks(:, j) = closest_point_on_line(lines(:, j), pos);
     end
+    
+    plot_world(mu_bar, P_bar, coords, map, lines, real_poses, filtered_poses, measured_landmarks);
+    pause;
     
     % Exctract the landmarks from the current state. Associate measured
     % landmarks with existing landmarks, update the counts. New landmarks
@@ -115,9 +130,12 @@ for i=1:length(commands)
         end
     end
     
-    plot_world(curPose, mu_bar, P_bar, coords, map, lines);
-    pause;
-    
     mu = mu_bar;
     P = P_bar;
+    
+    % Update filtered poses history
+    filtered_poses = [filtered_poses, mu(1:3)];
+    
+    plot_world(mu_bar, P_bar, coords, map, lines, real_poses, filtered_poses, []);
+    pause;
 end

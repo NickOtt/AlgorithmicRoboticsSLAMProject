@@ -2,22 +2,31 @@
 % As well as the map and landmark positions
 
 
-function plot_world(curPose, mu, P, coords, map, lines)
+function plot_world(mu, P, coords, map, lines, real_poses, filtered_poses, detections)
     hold on;
+    
     cmap = hsv(15); % 15 color choices
 
     % Plot map in world coords
     show(map)
     
-    % Plot actual position
-    scatter(curPose(1), curPose(2), 150, 'green', 'filled');
+    % Plot actual position (and angle)
+    real_pos = real_poses(:, end);
+    scatter(real_pos(1), real_pos(2), 100, 'green', 'filled');
+    plot([real_pos(1), real_pos(1) + 0.5*cos(real_pos(3))], [real_pos(2), real_pos(2) + 0.5*sin(real_pos(3))], 'green');
     
-    % Plot robot position
+    % Plot robot position (and angle)
     scatter(mu(1), mu(2), 50, 'blue', 'filled');
+    plot([mu(1), mu(1) + 0.5*cos(mu(3))], [mu(2), mu(2) + 0.5*sin(mu(3))], 'blue');
     
     % Extract and plot landmarks
     cmap(max((length(mu)-3)/2,1), :);
     scatter(mu(4:2:end-1), mu(5:2:end), 50, cmap(1:(length(mu)-3)/2, :), 'filled');
+    
+    % Plot Detections
+    if ~isempty(detections)
+        scatter(detections(1,:), detections(2,:), 50, [0.1, 0.1, 0.1], 'filled');
+    end
     
     % Plot robot cov
     plot_cov_ellipse(mu(1:2), P(1:2, 1:2), 'blue');
@@ -38,6 +47,10 @@ function plot_world(curPose, mu, P, coords, map, lines)
         plot(x, y);
     end
     
+    % Plot history of real and filtered poses
+    plot(real_poses(1, :), real_poses(2, :), 'blue', 'LineStyle','--')
+    plot(filtered_poses(1, :), filtered_poses(2, :), 'red', 'LineStyle','--')
+
     % Limits of the graph
     xlim([0, 10])
     ylim([0; 10])
