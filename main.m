@@ -6,14 +6,14 @@ addpath(genpath('src'))
 rng(499);
 
 % Create map
-p = zeros(20,20);
-p(5:6,6:7) = 1;
-p(15:16,7:8) = 1;
-p(10:11,5:6) = 1;
+p = zeros(16,16);
+p(3:4,9:10) = 1;
+p(11:12,7:8) = 1;
+% p(8:9,5:6) = 1;
 p(:,1) = 1;
-p(:,20) = 1;
+p(:,end) = 1;
 p(1,:) = 1;
-p(20,:) = 1;
+p(end,:) = 1;
 map = occupancyMap(p,2);
 
 % Create lidar sensor
@@ -39,8 +39,7 @@ alpha = [0.0001;  0.0001;  0.01;  0.0001;  0.0001;  0.0001];
 alpha = [0.2;  0.0;  0.0;  0.0;  0.0;  0.0];
 
 
-commands = [[1;0], [1;0], [1;0], [pi/2;pi/2], [pi/2;pi/2], [1;0], [1;0], [1;0]];
-% commands = [[0.2;0], [0.2;0], [0.2;0], [0.2; pi/6], [0.2; pi/6], [0.2; pi/6], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0]];
+commands = [[1;0], [1;0], [1;0], [1;0], [pi/2;pi/2], [1;0], [pi/2;pi/2], [1;0], [1;0], [1;0]];
 
 % Noise params
 sigma_r = 0.1;
@@ -123,8 +122,6 @@ for i=1:length(commands)
         if matched_indices(j) ~= 0
             z_actual = landmark_measurement(measured_landmarks(:,j), mu(1:3));
             [mu, P] = ekf_correction(mu, P, z_actual, matched_indices(j), sigma_r, sigma_phi);
-            plot_world(mu, P, coords, map, lines, real_poses, filtered_poses, commanded_poses, measured_landmarks);
-            pause;
         end
     end
     

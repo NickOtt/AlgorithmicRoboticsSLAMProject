@@ -54,6 +54,6 @@ function plot_world(mu, P, coords, map, lines, real_poses, filtered_poses, comma
 
 
     % Limits of the graph
-    xlim([0, 10])
-    ylim([0; 10])
+    xlim([0, 8])
+    ylim([0; 8])
 end
