@@ -20,7 +20,6 @@ function [mu, P] = ekf_correction(mu_bar, P_bar, z, landmark_idx, sigma_r, sigma
         (lambda_y - y) / r_sq, (lambda_x - x) / r_sq, -1];
     
     H(1:2, 2 * landmark_idx + 2: 2 * landmark_idx + 3) = -H(1:2, 1:2);
-    
     Q = [sigma_r^2, 0;
         0, sigma_phi^2];
     
@@ -30,7 +29,6 @@ function [mu, P] = ekf_correction(mu_bar, P_bar, z, landmark_idx, sigma_r, sigma
     z_diff(2) = clamp(z_diff(2));
     
     mu = mu_bar + (K * z_diff);
-    %P = (eye(length(P_bar)) - (K * H)) * P_bar;
     P = P_bar - (K * S * transpose(K));
 end
 

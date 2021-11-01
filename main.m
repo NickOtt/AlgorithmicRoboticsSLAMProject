@@ -7,11 +7,9 @@ rng(499);
 
 % Create map
 p = zeros(20,20);
-%p(5,2) = 1;
 p(5:6,6:7) = 1;
 p(15:16,7:8) = 1;
 p(10:11,5:6) = 1;
-%p(16,13) = 1;
 p(:,1) = 1;
 p(:,20) = 1;
 p(1,:) = 1;
@@ -37,11 +35,15 @@ P = [0.01, 0, 0;
     0, 0, 0.02];
 
 alpha = [0.0001;  0.0001;  0.01;  0.0001;  0.0001;  0.0001];
-alpha = zeros(1, 6);
+% alpha = zeros(1, 6);
+alpha = [0.2;  0.0;  0.0;  0.0;  0.0;  0.0];
+
 
 commands = [[1;0], [1;0], [1;0], [pi/2;pi/2], [pi/2;pi/2], [1;0], [1;0], [1;0]];
 % commands = [[0.2;0], [0.2;0], [0.2;0], [0.2; pi/6], [0.2; pi/6], [0.2; pi/6], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0], [0.2;0]];
-sigma_r = 0.01;
+
+% Noise params
+sigma_r = 0.1;
 sigma_phi = 0.01;
 
 % Ransac Params
@@ -66,9 +68,7 @@ for i=1:length(commands)
     [mu_bar, P_bar] = ekf_prediction(mu, P, commands(:, i), alpha);
 
     % Simulate motion (This is where the robot "actually" is)
-    % Simulate laser scan
-    % Only pass non-nan values (max distance) to future functions
-    real_pos = sample_motion_model_velocity(commands(:,i),mu,alpha);
+    real_pos = sample_motion_model_velocity(commands(:,i),real_poses(:, end),alpha);
     
     % Update real poses history
     real_poses = [real_poses, real_pos];
@@ -76,6 +76,8 @@ for i=1:length(commands)
     % Update ideal commanded poses history
     commanded_poses = [commanded_poses, sample_motion_model_velocity(commands(:,i),commanded_poses(:, end),zeros(1, 6))];
     
+    % Simulate laser scan
+    % Only pass non-nan values (max distance) to future functions
     scan = lidar(real_pos);
     noisy_scan = make_scan_noisy(scan,lidar_noise_sigma)';
     hits = ~isnan(noisy_scan);
@@ -87,7 +89,7 @@ for i=1:length(commands)
     lines = multi_line_ransac(coords, N, dist, L, n_thresh);
     
     % Plot visualization
-    plot_world(mu_bar, P_bar, coords, map, lines, real_poses, filtered_poses, []);
+    plot_world(mu_bar, P_bar, coords, map, lines, real_poses, filtered_poses, commanded_poses, []);
     pause;
 
     % Find the closest points on each line to a given global position
@@ -101,7 +103,7 @@ for i=1:length(commands)
         measured_landmarks(:, j) = closest_point_on_line(lines(:, j), pos);
     end
     
-    plot_world(mu_bar, P_bar, coords, map, lines, real_poses, filtered_poses, measured_landmarks);
+    plot_world(mu_bar, P_bar, coords, map, lines, real_poses, filtered_poses, commanded_poses, measured_landmarks);
     pause;
     
     % Exctract the landmarks from the current state. Associate measured
@@ -114,14 +116,21 @@ for i=1:length(commands)
 
     [matched_indices, landmark_counts] = associate_landmarks(landmarks, measured_landmarks, landmark_covs, landmark_counts, lambda);
     
+    measured_landmarks, matched_indices
+    
     % Run update using detected landmarks to update robot and landmarks
     for j = 1:size(measured_landmarks, 2)
         if matched_indices(j) ~= 0
             z_actual = landmark_measurement(measured_landmarks(:,j), mu_bar(1:3));
             [mu_bar, P_bar] = ekf_correction(mu_bar, P_bar, z_actual, matched_indices(j), sigma_r, sigma_phi);
+            plot_world(mu_bar, P_bar, coords, map, lines, real_poses, filtered_poses, commanded_poses, measured_landmarks);
+            pause;
         end
     end
-       
+    
+    plot_world(mu_bar, P_bar, coords, map, lines, real_poses, filtered_poses, commanded_poses, measured_landmarks);
+    pause;
+
     % Add newly detected landmarks to the array
     for j = 1:size(measured_landmarks, 2)
         if matched_indices(j) == 0
@@ -136,6 +145,6 @@ for i=1:length(commands)
     % Update filtered poses history
     filtered_poses = [filtered_poses, mu(1:3)];
     
-    plot_world(mu_bar, P_bar, coords, map, lines, real_poses, filtered_poses, []);
+    plot_world(mu_bar, P_bar, coords, map, lines, real_poses, filtered_poses, commanded_poses, []);
     pause;
 end
