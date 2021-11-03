@@ -122,26 +122,32 @@ for i=1:length(commands)
         end
     end
     
-    % Update filtered poses history
-    filtered_poses = [filtered_poses, mu(1:3)];
-        
+    % Off by one errors, becuase we measure landmarks first now
+    if i ~= 1
+        % Update filtered poses history
+        filtered_poses = [filtered_poses, mu(1:3)];
+    end
     plot_world(mu, P, coords, map, lines, real_poses, filtered_poses, commanded_poses, []);
     pause;
-    
-    % Step 1: Predict current state forward
-    [mu, P] = ekf_prediction(mu, P, commands(:, i), alpha);
 
-    % Simulate motion (This is where the robot "actually" is)
-    real_pos = sample_motion_model_velocity(commands(:,i),real_poses(:, end),alpha);
-    
-    % Update real poses history
-    real_poses = [real_poses, real_pos];
-    
-    % Update ideal commanded poses history
-    commanded_poses = [commanded_poses, sample_motion_model_velocity(commands(:,i),commanded_poses(:, end),zeros(1, 6))];
+    % Off by one errors, becuase we measure landmarks first now
+    if i ~= size(commands, 2)
+        % Step 1: Predict current state forward
+        [mu, P] = ekf_prediction(mu, P, commands(:, i), alpha);
+
+        % Simulate motion (This is where the robot "actually" is)
+        real_pos = sample_motion_model_velocity(commands(:,i),real_poses(:, end),alpha);
+        
+        % Update real poses history
+        real_poses = [real_poses, real_pos];
+
+        % Update ideal commanded poses history
+        commanded_poses = [commanded_poses, sample_motion_model_velocity(commands(:,i),commanded_poses(:, end),zeros(1, 6))];
+    end
 end
 
 commanded_poses
 real_poses
 filtered_poses
+plot_world(mu, P, coords, map, lines, real_poses, filtered_poses, commanded_poses, []);
 
