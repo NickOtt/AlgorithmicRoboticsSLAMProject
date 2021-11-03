@@ -48,10 +48,9 @@ function plot_world(mu, P, coords, map, lines, real_poses, filtered_poses, comma
     end
     
     % Plot history of real and filtered poses
-    plot(real_poses(1, :), real_poses(2, :), 'green', 'LineStyle','--')
-    plot(filtered_poses(1, :), filtered_poses(2, :), 'blue', 'LineStyle','--')
-    plot(commanded_poses(1, :), commanded_poses(2, :), 'red', 'LineStyle','--')
-
+    plot(real_poses(1, :), real_poses(2, :),'Color','green', 'LineStyle','--','Marker','o')
+    plot(filtered_poses(1, :), filtered_poses(2, :),'Color','blue', 'LineStyle','--','Marker','o')
+    plot(commanded_poses(1, :), commanded_poses(2, :),'Color','red', 'LineStyle','--','Marker','o')
 
     % Limits of the graph
     xlim([0, 8])

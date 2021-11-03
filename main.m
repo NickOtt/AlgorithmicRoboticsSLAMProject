@@ -20,7 +20,7 @@ map = occupancyMap(p,2);
 lidar = LidarSensor;
 lidar.sensorOffset = [0,0];
 lidar.scanAngles = linspace(-pi/2,pi/2,101);
-lidar.maxRange = 5;
+lidar.maxRange = 10;
 lidar_noise_sigma = 0.0;
 
 % Create visualizer
@@ -32,18 +32,17 @@ attachLidarSensor(viz,lidar);
 mu = [1; 1.5; 0];
 P = [0.01, 0, 0;
     0, 0.01, 0;
-    0, 0, 0.02];
+    0, 0, 0.002];
 
 alpha = [0.0001;  0.0001;  0.01;  0.0001;  0.0001;  0.0001];
 % alpha = zeros(1, 6);
-alpha = [0.2;  0.0;  0.0;  0.0;  0.0;  0.0];
+alpha = [0.05;  0.0;  0.002;  0.0;  0.0;  0.0];
 
-
-commands = [[1;0], [1;0], [1;0], [1;0], [pi/2;pi/2], [1;0], [pi/2;pi/2], [1;0], [1;0], [1;0]];
+commands = [[1;0], [1;0], [1;0], [1;0], [pi/4;pi/4], [pi/4;pi/4], [1;0], [pi/4;pi/4], [pi/4;pi/4], [1;0], [1;0], [1;0], [1;0]];
 
 % Noise params
-sigma_r = 0.1;
-sigma_phi = 0.01;
+sigma_r = 0.05;
+sigma_phi = 0.04;
 
 % Ransac Params
 N = 100; % Number of times to try to find a line
@@ -61,20 +60,9 @@ landmark_counts = [];
 real_poses = [mu];
 filtered_poses = [mu];
 commanded_poses = [mu];
+real_pos = real_poses(:, end);
 
 for i=1:length(commands)
-    % Step 1: Predict current state forward
-    [mu, P] = ekf_prediction(mu, P, commands(:, i), alpha);
-
-    % Simulate motion (This is where the robot "actually" is)
-    real_pos = sample_motion_model_velocity(commands(:,i),real_poses(:, end),alpha);
-    
-    % Update real poses history
-    real_poses = [real_poses, real_pos];
-    
-    % Update ideal commanded poses history
-    commanded_poses = [commanded_poses, sample_motion_model_velocity(commands(:,i),commanded_poses(:, end),zeros(1, 6))];
-    
     % Simulate laser scan
     % Only pass non-nan values (max distance) to future functions
     scan = lidar(real_pos);
@@ -92,11 +80,11 @@ for i=1:length(commands)
     pause;
 
     % Find the closest points on each line to a given global position
-    % This is the landmark point
+    % This is the landmark point 
     
     % Should the pos be based on where the robot was when the landmark was
     % first found?
-    pos = [5; 5; 0];
+    pos = [4; 4];
     measured_landmarks = zeros(2, size(lines, 2));
     for j = 1:size(lines, 2)
         measured_landmarks(:, j) = closest_point_on_line(lines(:, j), pos);
@@ -114,9 +102,7 @@ for i=1:length(commands)
     landmark_covs = P;
 
     [matched_indices, landmark_counts] = associate_landmarks(landmarks, measured_landmarks, landmark_covs, landmark_counts, lambda);
-    
-    measured_landmarks, matched_indices
-    
+        
     % Run update using detected landmarks to update robot and landmarks
     for j = 1:size(measured_landmarks, 2)
         if matched_indices(j) ~= 0
@@ -136,12 +122,26 @@ for i=1:length(commands)
         end
     end
     
-    mu = mu;
-    P = P;
-    
     % Update filtered poses history
     filtered_poses = [filtered_poses, mu(1:3)];
-    
+        
     plot_world(mu, P, coords, map, lines, real_poses, filtered_poses, commanded_poses, []);
     pause;
+    
+    % Step 1: Predict current state forward
+    [mu, P] = ekf_prediction(mu, P, commands(:, i), alpha);
+
+    % Simulate motion (This is where the robot "actually" is)
+    real_pos = sample_motion_model_velocity(commands(:,i),real_poses(:, end),alpha);
+    
+    % Update real poses history
+    real_poses = [real_poses, real_pos];
+    
+    % Update ideal commanded poses history
+    commanded_poses = [commanded_poses, sample_motion_model_velocity(commands(:,i),commanded_poses(:, end),zeros(1, 6))];
 end
+
+commanded_poses
+real_poses
+filtered_poses
+

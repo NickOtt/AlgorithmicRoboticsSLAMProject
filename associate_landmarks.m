@@ -26,6 +26,7 @@ function [matched_indices, new_counts] = associate_landmarks(landmarks, detectio
         % covs are 2x2 on the diagonal, first 3x3 is for robot cov
         cov_i = 4+2*(closest-1);
         closest_cov = covs(cov_i:cov_i+1, cov_i:cov_i+1);
+        closest_cov = closest_cov + covs(1:2, 1:2); % Add robot cov in
         if is_in_range(landmarks(:, closest), l, closest_cov, lambda)
             % If close to an existing landmark increment count by one
             % And add the matched index to array
