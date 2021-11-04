@@ -17,7 +17,7 @@ function [mu, P] = ekf_correction(mu_bar, P_bar, z, landmark_idx, sigma_r, sigma
     H = zeros(2, length(mu_bar));
     
     H(1:2, 1:3) = [(x - lambda_x) / r, (y - lambda_y) / r, 0;
-        (lambda_y - y) / r_sq, (lambda_x - x) / r_sq, -1];
+        (lambda_y - y) / r_sq, -(lambda_x - x) / r_sq, -1];
     
     H(1:2, 2 * landmark_idx + 2: 2 * landmark_idx + 3) = -H(1:2, 1:2);
     Q = [sigma_r^2, 0;
