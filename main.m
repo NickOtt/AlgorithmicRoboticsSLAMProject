@@ -8,8 +8,8 @@ rng(499);
 % Create map
 p = zeros(16,16);
 p(3:4,9:10) = 1;
-p(11:12,7:8) = 1;
-% p(8:9,5:6) = 1;
+p(11:12,7:9) = 1;
+p(5:6,12:16) = 1;
 p(:,1) = 1;
 p(:,end) = 1;
 p(1,:) = 1;
@@ -21,7 +21,7 @@ lidar = LidarSensor;
 lidar.sensorOffset = [0,0];
 lidar.scanAngles = linspace(-pi/2,pi/2,101);
 lidar.maxRange = 10;
-lidar_noise_sigma = 0.0;
+lidar_noise_sigma = 0.01;
 
 % Create visualizer
 viz = Visualizer2D;
@@ -34,15 +34,15 @@ P = [0.01, 0, 0;
     0, 0.01, 0;
     0, 0, 0.002];
 
-alpha = [0.0001;  0.0001;  0.01;  0.0001;  0.0001;  0.0001];
+alpha = [0.0001;  0.0001;  0.003;  0.0001;  0.0001;  0.0001];
 % alpha = zeros(1, 6);
-alpha = [0.05;  0.0;  0.002;  0.0;  0.0;  0.0];
+%alpha = [0.05;  0.0;  0.002;  0.0;  0.0;  0.0];
 
 commands = [[1;0], [1;0], [1;0], [1;0], [pi/4;pi/4], [pi/4;pi/4], [1;0], [pi/4;pi/4], [pi/4;pi/4], [1;0], [1;0], [1;0], [1;0]];
 
 % Noise params
-sigma_r = 0.05;
-sigma_phi = 0.04;
+sigma_r = 0.1;
+sigma_phi = 0.05;
 
 % Ransac Params
 N = 100; % Number of times to try to find a line
