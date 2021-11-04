@@ -22,7 +22,7 @@ lidar = LidarSensor;
 lidar.sensorOffset = [0,0];
 lidar.scanAngles = linspace(-pi/2,pi/2,101);
 lidar.maxRange = 10;
-lidar_noise_sigma = 0.0;
+lidar_noise_sigma = 0.01;
 
 % Create visualizer
 viz = Visualizer2D;
@@ -35,7 +35,7 @@ P = [0.01, 0, 0;
     0, 0.01, 0;
     0, 0, 0.002];
 
-alpha = [0.001;  0.001;  0.005;  0.001;  0.001;  0.001];
+alpha = [0.0001;  0.0001;  0.0001;  0.0001;  0.005;  0];
 % alpha = zeros(1, 6);
 %alpha = [0.05;  0.0;  0.002;  0.0;  0.0;  0.0];
 
