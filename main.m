@@ -8,7 +8,8 @@ rng(499);
 % Create map
 p = zeros(16,16);
 p(3:4,9:10) = 1;
-p(11:12,7:8) = 1;
+p(11:12,7:9) = 1;
+p(5:6,12:16) = 1;
 % p(8:9,5:6) = 1;
 p(:,1) = 1;
 p(:,end) = 1;
@@ -34,15 +35,15 @@ P = [0.01, 0, 0;
     0, 0.01, 0;
     0, 0, 0.002];
 
-alpha = [0.0001;  0.0001;  0.01;  0.0001;  0.0001;  0.0001];
+alpha = [0.001;  0.001;  0.005;  0.001;  0.001;  0.001];
 % alpha = zeros(1, 6);
-alpha = [0.05;  0.0;  0.002;  0.0;  0.0;  0.0];
+%alpha = [0.05;  0.0;  0.002;  0.0;  0.0;  0.0];
 
 commands = [[1;0], [1;0], [1;0], [1;0], [pi/4;pi/4], [pi/4;pi/4], [1;0], [pi/4;pi/4], [pi/4;pi/4], [1;0], [1;0], [1;0], [1;0]];
 
 % Noise params
-sigma_r = 0.05;
-sigma_phi = 0.04;
+sigma_r = 0.1;
+sigma_phi = 0.1;
 
 % Ransac Params
 N = 100; % Number of times to try to find a line
@@ -106,8 +107,9 @@ for i=1:length(commands)
     % Run update using detected landmarks to update robot and landmarks
     for j = 1:size(measured_landmarks, 2)
         if matched_indices(j) ~= 0
-            z_actual = landmark_measurement(measured_landmarks(:,j), mu(1:3));
-            [mu, P] = ekf_correction(mu, P, z_actual, matched_indices(j), sigma_r, sigma_phi);
+            landmark = closest_point_on_line(lines(:, j), mu(1:3));
+            z_actual = landmark_measurement(landmark, mu(1:3));
+            [mu, P] = ekf_correction(mu, P, z_actual, matched_indices(j), pos, sigma_r, sigma_phi);
         end
     end
     
@@ -117,8 +119,9 @@ for i=1:length(commands)
     % Add newly detected landmarks to the array
     for j = 1:size(measured_landmarks, 2)
         if matched_indices(j) == 0
-            z_actual = landmark_measurement(measured_landmarks(:,j), mu(1:3));
-            [mu, P] = ekf_add_landmark(mu, P, z_actual, sigma_r, sigma_phi);
+            landmark = closest_point_on_line(lines(:, j), mu(1:3));
+            z_actual = landmark_measurement(landmark, mu(1:3));
+            [mu, P] = ekf_add_landmark(mu, P, z_actual, pos, sigma_r, sigma_phi);
         end
     end
     

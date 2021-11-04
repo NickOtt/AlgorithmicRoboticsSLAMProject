@@ -5,7 +5,7 @@
 function plot_world(mu, P, coords, map, lines, real_poses, filtered_poses, commanded_poses, detections)
     hold on;
     
-    cmap = hsv(15); % 15 color choices
+    cmap = hsv(30); % 15 color choices
 
     % Plot map in world coords
     show(map)
