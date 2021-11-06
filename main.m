@@ -67,17 +67,20 @@ for i=1:length(commands)
     % Simulate laser scan
     % Only pass non-nan values (max distance) to future functions
     scan = lidar(real_pos);
-    noisy_scan = make_scan_noisy(scan,lidar_noise_sigma)';
-    hits = ~isnan(noisy_scan);
+    scan = make_scan_noisy(scan,lidar_noise_sigma)';
+    hits = ~isnan(scan);
     
+    % Bundle dist with angles
+    scan = [scan(hits).'; lidar.scanAngles(hits)];
+
     % Convert scan to xy coordinates based on where robot "thinks" it is
-    coords = scan_to_xy(noisy_scan(hits), lidar.scanAngles(hits), mu);
-        
+    coords = scan_to_xy(scan(1, :), scan(2, :), mu);
+
     % Extract lines using ransac
     lines = multi_line_ransac(coords, N, dist, L, n_thresh);
     
     % Plot visualization
-    plot_world(mu, P, coords, map, lines, real_poses, filtered_poses, commanded_poses, []);
+    plot_world(mu, P, scan, map, lines, real_poses, filtered_poses, commanded_poses, []);
     pause;
 
     % Find the closest points on each line to a given global position
@@ -91,7 +94,7 @@ for i=1:length(commands)
         measured_landmarks(:, j) = closest_point_on_line(lines(:, j), pos);
     end
     
-    plot_world(mu, P, coords, map, lines, real_poses, filtered_poses, commanded_poses, measured_landmarks);
+    plot_world(mu, P, scan, map, lines, real_poses, filtered_poses, commanded_poses, measured_landmarks);
     pause;
     
     % Exctract the landmarks from the current state. Associate measured
@@ -113,7 +116,7 @@ for i=1:length(commands)
         end
     end
     
-    plot_world(mu, P, coords, map, lines, real_poses, filtered_poses, commanded_poses, measured_landmarks);
+    plot_world(mu, P, scan, map, lines, real_poses, filtered_poses, commanded_poses, measured_landmarks);
     pause;
 
     % Add newly detected landmarks to the array
@@ -130,7 +133,8 @@ for i=1:length(commands)
         % Update filtered poses history
         filtered_poses = [filtered_poses, mu(1:3)];
     end
-    plot_world(mu, P, coords, map, lines, real_poses, filtered_poses, commanded_poses, []);
+    
+    plot_world(mu, P, scan, map, lines, real_poses, filtered_poses, commanded_poses, []);
     pause;
 
     % Off by one errors, becuase we measure landmarks first now
@@ -152,5 +156,5 @@ end
 commanded_poses
 real_poses
 filtered_poses
-plot_world(mu, P, coords, map, lines, real_poses, filtered_poses, commanded_poses, []);
+plot_world(mu, P, scan, map, lines, real_poses, filtered_poses, commanded_poses, []);
 

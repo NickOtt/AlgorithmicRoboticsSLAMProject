@@ -2,7 +2,7 @@
 % As well as the map and landmark positions
 
 
-function plot_world(mu, P, coords, map, lines, real_poses, filtered_poses, commanded_poses, detections)
+function plot_world(mu, P, scan, map, lines, real_poses, filtered_poses, commanded_poses, detections)
     hold on;
     
     cmap = hsv(30); % 15 color choices
@@ -37,6 +37,7 @@ function plot_world(mu, P, coords, map, lines, real_poses, filtered_poses, comma
     end
     
     % Plot scan coordinates
+    coords = scan_to_xy(scan(1, :), scan(2, :), mu);
     scatter(coords(1, :), coords(2, :), 100, '.');  % 100 makes the dots large
     
     % Plot lines
