@@ -47,7 +47,7 @@ sigma_phi = 0.1;
 
 % Ransac Params
 N = 100; % Number of times to try to find a line
-dist = 0.01; % Dist at which point is matched to a line
+dist = 0.02; % Dist at which point is matched to a line
 L = 5; % Max number of lines to extract
 n_thresh = 5; % How many points need to be in a line
 
