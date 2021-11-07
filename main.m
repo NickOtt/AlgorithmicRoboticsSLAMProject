@@ -153,8 +153,22 @@ for i=1:length(commands)
     end
 end
 
-commanded_poses
-real_poses
-filtered_poses
 plot_world(mu, P, scan, map, lines, real_poses, filtered_poses, commanded_poses, []);
+
+error = filtered_poses - real_poses;
+
+% Plot errors
+figure
+% Plot all errors (inlcuding theta)
+% plot(abs(error(:,2:end).'), '-o','LineWidth', 2);
+% legend('x', 'y', 'theta');
+
+% Plot just magnitude of xy error
+plot(vecnorm(error(1:2,1:end)).', '-o','LineWidth', 2);
+
+title('Magnitude of Localization Error');
+xlabel('time (s)')
+ylabel('error (m)')
+
+ylim([0, 0.1]);
 
